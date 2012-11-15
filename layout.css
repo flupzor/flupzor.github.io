@@ -1,0 +1,22 @@
+h1, h2 {
+	margin-bottom: 0.1em;
+}
+p {
+	margin-top: 0.2em;
+	margin-bottom: 0.2em;
+}
+hr {
+	color: blue;
+}
+div.date { 
+	font-style: italic;
+	font-size: 0.85em;
+	margin-bottom: 0.5em;
+}
+hr {
+	margin-left: 0;
+	text-align: left; /* for Internet Explorer */
+}
+p, hr, h1, h2, div.date {
+	width: 30em;
+}

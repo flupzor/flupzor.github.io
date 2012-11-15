@@ -1,0 +1,126 @@
+<html>
+  <head>
+    <title>Abbott Freestyle</title>
+  </head>
+  <body>
+    <h1>Abbott Freestyle</h1>
+    <b> Note: i figured out what the checksum is. See below. </b>
+    <p> This is a description of the protocol which is used by the following
+    devices:</p>
+    <ul>
+      <li>Abbott Freestyle FREEDOM-Lite</li>
+      <li>Abbott Freestyle mini</li>
+    </ul>
+    <p>This is a work in progress. There are some parts which aren't clear to me yet. </p>
+
+    <p>These devices use a TRS (mini-jack) RS232 to either USB or Serial cable.</p>
+
+    <p>I use the Texas Instruments 3410 USB serial adapter from Abbott for
+    testing.</p>
+
+    <p>The protocol description is done in ABNF, this standard can be found <a
+	    href="ftp://ftp.rfc-editor.org/in-notes/std/std68.txt">here</a>.</p>
+
+    <p>You might notice there are some quirks in the protocol. So it likely isn't
+    a mistake if two spaces are used for no reason or if a newline is used for
+    no reason.</p>
+
+    <h2>Protocol</h2>
+    The FreeStyle protocol has 2 types of messages a command and a result.
+    Currently only one command exists which returns multiple results.
+    <pre>
+    generic-message = command / result
+    </pre>
+
+    <p>The host starts with setting up the connection. After that it should
+    send the following command:</p>
+
+    <pre>
+    command = "mem"
+    </pre>
+
+    <p>The device then sends the following data. </p>
+
+    <pre>
+    result = devicetype softwarerevision currentdatetime log
+    log = ("Log Empty" end1 | (nrresults resultlines) end2)
+    resultlines = firstresult *otherresults 
+    </pre>
+    <b>Device type</b>
+    There are ofcourse more devices then this. However, i don't know which.
+    Please send me more device types!
+    <pre>
+    devicetype = CR LF ( "DAMH359-63524" \ ; FreeStyle Mini
+			 "CDMK311-B0764" \ ; FreeStyle Freedom Lite
+			 "DBMN169-C4824" ) ; FreeStyle Lite
+
+    </pre>
+
+    <b>Software revision</b>
+    The software revision doesn't seem to be very consistent. The first number
+    has 5 spaces between the number and "-P" while the second one does not.  As
+    you see both of the devices i own have a integer part a radix point and a
+    fractional part and it ends with "-P". I have no idea what this means other
+    that it is a software revision.
+
+    There are ofcourse more software revisions then this. However, i don't know which.
+    Please send me more software revisions!
+    
+    <pre>
+    softwarerevision = CR LF ( "4.0100     -P" \ ; On my FreeStyle Mini
+			       "0.31-P" \ ; On my FreeStyle Freedom Lite (The missing spaces isn't a mistake)
+			       "1.43       -P" ) ; On my FreeStyle Lite
+    </pre>
+
+    <b>Current time and date</b>
+    <pre>
+    currentdatetime = CR LF datetime
+
+    datetime = month SP day SP year SP time
+    month = "Jan " / "Feb " / "Mar " / "Apr " / "May " / "June" / "July" /
+	    "Aug " / "Sep " / "Oct " / "Nov " / "Dec " ; N.B. Except June and July all months have spaces at the end.
+    day = 2DIGIT
+    year = 4DIGIT
+
+    time = hour ':' minute ':' second
+    hour = 2DIGIT
+    minute = 2DIGIT
+    second = 2DIGIT
+    </pre>
+
+    <b>Number of results</b>
+    <p>There is probably is a maximum to this. At the moment I am guessing it
+    is 450 which is the maximum the Abbott Precision Xceed can store. The
+    minimum is 1</p>
+
+    <pre>
+    nrresults = CR LF 3DIGIT; e.g. 001 or 250
+    </pre>
+    <pre>e.g.:  CR LF "250"</pre>
+
+    <b>Result line</b>
+
+    The first result has: CR LF LF for some reason. The others result lines
+    don't.
+
+    <pre>
+    firstresult = CR LF LF resultline
+    otherresults = CR LF resultline
+    resultline = sugarlevel datetime2 plasmatype "0x00"
+    sugarlevel = 3DIGIT ; e.g. 300 (I don't know what the maximum or minimum is)
+    datetime2 = month SP day sp year sp time2
+    time2 = hour ':' minute
+    plasmatype = 2DIGIT
+    </pre>
+
+    <b>End</b>
+
+    <pre>
+    end1 = "END"
+    end2 = "0x" 4DIGIT end1 ; The 4DIGIT part is a checksum. It is the
+    accumulation of all the ASCII characters (excluding the 0x000 END part).
+    </pre>
+
+  </body>
+</html>
+<!-- vim: set shiftwidth=2 -->
