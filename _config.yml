@@ -1,0 +1,12 @@
+# Site settings
+title: flupzor.nl
+email: alex@flupzor.nl
+description: >
+  Alexander Schrijver's website. Cats, cats, and more cats.
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://www.flupzor.nl" # the base hostname & protocol for your site
+twitter_username: flupzor
+github_username:  flupzor
+
+# Build settings
+markdown: kramdown

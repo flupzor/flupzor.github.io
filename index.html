@@ -1,40 +1,24 @@
-<html>
-  <head>
-    <title>Flupzor's website</title>
-    <link rel="stylesheet" href="layout.css" type="text/css" media="screen,
-    handheld, projection" />
-  </head>
-  <body>
-    <img src="spoeks-thumb.jpg" alt="My felis catus, Asterix!" />
-    <h1>About</h1>
-    <p>Hi, I'm Alexander. This is my website I'll try to keep it uptodate ;) If
-    you have questions, found mistakes you can send me an e-mail at:
-    alex at flupzor dot nl. (<a href="flupzor.pgp">PGP</a>) You can also find
-    me at <a href="http://twitter.com/flupzor">twitter</a>. And i have a <a
-    href="http://github.com/flupzor/">github account</a>.</p>
+---
+layout: default
+---
 
-    <h2>Abbott stuff</h2>
-    <hr />
-    <div class="date">Written: 19 dec 2010</div>
-    <div class="content">
-    <p>I've been trying to figure out the protocol for the Abbott Freestyle
-    product line. I made a protocol description which can be found <a
-    href="protocol.html">here</a>.</p>
+<div class="home">
 
-    <p>If you're looking for the description for the Abbott Xceed product line,
-    Chris Ridd made an awesome description which can be found <a
-    href="http://www.lnv.pwp.blueyonder.co.uk/xceed/">here</a>. He also made an
-    implementation in Objective C, but I haven't found time to test that.</p>
+  <h1 class="page-heading">Posts</h1>
 
-    <p>Abbott sells an adapter cable which uses the TI 3410 chipset. This
-    chipset is supported by most modern operating systems, however not all
-    include the Abbott vendor id/product id (0x1a61, 0x3410 respectively).
-    Currently it should work by default in Windows XP using the driver Abbott
-    supplied, and in OpenBSD since
-    <a href="http://marc.info/?l=openbsd-cvs&m=129261992926939&w=2">this</a>
-    commit. Getting it working with other operating systems should be
-    trivial.</p>
-    </div>
+  <ul class="post-list">
+    {% for post in site.posts %}
+      <li>
+        <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
 
-  </body>
-</html>
+        <h2>
+          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </h2>
+        <p class="post-content">{{ post.content }}</p>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <p class="rss-subscribe">subscribe <a href="{{ "/feed.xml" | prepend: site.baseurl }}">via RSS</a></p>
+
+</div>

@@ -1,0 +1,81 @@
+---
+layout: post
+title:  "Getting root on TP-LINK AC750"
+date:   2015-04-30 19:54:00
+tags: [bug, root, router]
+---
+
+I was playing around with the new wireless router I bought and wondered if
+the input to the ping command was escaped properly. It wasn't.
+
+On Unix systems, in order to send a ICMP echo request you'll need root
+permissions, or at least special permissions. Ping is usually implemented by
+setting the setuid bit on the ping(8) executable.
+
+Because root permissions are required to send a ICMP echo request, the easiest
+way to implement ping in a web interface is to call ping(8) with the proper
+arguments, and parsing the result.
+
+The way the fols at TP-LINK implemented this is by using system(3) or similar,
+and just directly pass "ping $userdata" to a shell. Without ever validating, or
+escaping $userdata.
+
+How to exploit this?
+--------------------
+
+Using the TP-LINK AC750 web interface the output data of the ping functionality
+isn't (directly) sent back to the web interface. What you get as a result is
+either, unknown host, no response, or ICMP echo replies.
+
+![Abusing the ping functionality]({{ site.baseurl }}/img/tplink_ping.png)
+
+The first experiment is this input:
+
+    "$(echo 127.0.0.1)"
+
+This probably invokes something like:
+
+    $ ping "$(echo 127.0.0.1)"
+
+which is translated by the shell to.
+
+    $ ping 127.0.0.1
+
+Using this input we can verify the input data isn't escaped. If it returns ICMP
+echo responses, it worked. If it didn't, they probably fixed the bug.
+
+Obviously, we want a shell. I played around a bit with various commands to find
+out which commands we have at our disposal. (What I did is, I dumped a
+directory listing, and the output of various commands to the USB drive which I
+attached to the router. )
+
+I found out there is a telnetd(8) daemon available. Also, by default this
+telnetd(8) server already runs with Cisco IOS-like shell, which allows you to
+change the same settings as the web interface, but with horror of the IOS
+shell.
+
+![TP-LINK shell]({{ site.baseurl }}/img/tplink_console.png)
+
+So, first, we should kill that shell. We can do that with the following input.
+
+    "$(killall telnetd > /dev/null && echo 127.0.0.1)"
+
+Then we start telnetd again, now with the bourne shell.
+
+    "$(/usr/sbin/telnetd -l /bin/sh > /dev/null && echo 127.0.0.1)"
+
+Now if you open a telnet session with the router, you've got a root shell :)
+
+![TP-LINK bourne shell]({{ site.baseurl }}/img/tplink_sh.png)
+
+How bad is this?
+----------------
+
+I think it's a good idea that customers get full access to the appliances they
+purchase. So, from that perspective I think this is more a feature than a bug.
+
+If you want to give users web access to the router, but not root access, this
+is a bug. But I doubt there are many users who want this.
+
+What is bad about this, is the fact that the webserver is run as a superuser.
+Worse, all processes are run as superuser.
